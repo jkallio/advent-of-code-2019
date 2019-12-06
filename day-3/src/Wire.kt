@@ -2,7 +2,7 @@ import java.lang.NullPointerException
 import kotlin.Exception
 
 class Wire (private val inputString: String) {
-    val nodes = mutableListOf<Node>()
+    val nodes = mutableMapOf<Int, Node>()
     private var lastNode : Node = Node(0,0)
 
     init {
@@ -10,7 +10,7 @@ class Wire (private val inputString: String) {
     }
 
     fun addNode(node: Node) {
-        nodes.add(node)
+        nodes[node.hashCode()] = node
         lastNode = node
     }
 

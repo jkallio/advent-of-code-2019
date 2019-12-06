@@ -52,17 +52,13 @@ import java.io.File
  * What is the Manhattan distance from the central port to the closest intersection?
  */
 
-fun findClosestCrossSection(wire1: Wire, wire2: Wire): Node {
-    val crossSections = mutableListOf<Node>()
-    var closestNode = Node(Int.MAX_VALUE,Int.MAX_VALUE)
-    for (node1 in wire1.nodes) {
-        for (node2 in wire2.nodes) {
-            if (node1.equals(node2)) {
-                println("Crosssection found => $node1")
-                crossSections.add(node1)
-                if (node1.manhattanDistance < closestNode.manhattanDistance) {
-                    closestNode = node1
-                }
+fun findClosestCrossSection(wire1: Wire, wire2: Wire): Node? {
+    var closestNode: Node? = null
+    for (node in wire1.nodes) {
+        if (wire2.nodes.containsKey(node.value.hashCode())) {
+            println("Crosssection found => $node")
+            if (closestNode == null || node.value.manhattanDistance < closestNode.manhattanDistance) {
+                closestNode = node.value
             }
         }
     }
@@ -70,7 +66,6 @@ fun findClosestCrossSection(wire1: Wire, wire2: Wire): Node {
 }
 
 fun main (args: Array<String>) {
-
     if (args.count() == 1) {
         val wires = mutableListOf<Wire>()
         File(args[0]).forEachLine {
@@ -78,7 +73,7 @@ fun main (args: Array<String>) {
         }
         if (wires.count() == 2) {
             val node = findClosestCrossSection(wires[0], wires[1])
-            println("Closest node = $node")
+            println("Closest crossection = $node")
         }
         else {
             println("*** Invalid input (Expected 2 wire input strings)")

@@ -11,9 +11,10 @@ class Node (val x : Int, val y : Int) {
     }
 
     override fun hashCode(): Int {
-        var result = x
-        result = 31 * result + y
-        return result
+        // Szudzik's pairing function
+        val a = if (x >= 0) 2 * x else -2 * x - 1
+        val b = if (y >= 0) 2 * y else -2 * y - 1
+        return if (a >= b) a * a + a + b else a + b * b
     }
 
     override fun toString(): String {
