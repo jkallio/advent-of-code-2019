@@ -1,9 +1,11 @@
 # Ignore IntelliJ stuff
 .idea/out/
-.idea/workspace.xml
-.idea/modules.xml
+*/.idea/
 *.iml
 *.iws
 
 # Java output
 out/
+
+# Mac
+.DStore
