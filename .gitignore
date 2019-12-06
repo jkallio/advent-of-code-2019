@@ -1,0 +1,9 @@
+# Ignore IntelliJ stuff
+.idea/out/
+.idea/workspace.xml
+.idea/modules.xml
+*.iml
+*.iws
+
+# Java output
+out/
