@@ -1,7 +1,8 @@
 import kotlin.math.abs
 
 class Node (val x : Int, val y : Int) {
-    val manhattanDistance : Int = abs(x) + abs(y)
+    val manhattanDistance: Int = abs(x) + abs(y)
+    var stepCount: Int = 0
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

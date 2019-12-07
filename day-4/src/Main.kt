@@ -54,18 +54,20 @@ fun checkRules_Part1(value: Int) : Boolean {
 
 fun checkRules_Part2(value: Int) : Boolean {
     var sameDigitCount = 0
-    var lastDigit = '0'
+    var rule1 = false
     val digits = value.toString()
     for (i in 0 until digits.count()) {
         if (i > 0) {
             // Rule-1: Two adjacent digits are the same (like 22 in 122345).
             // BUT the two adjacent matching digits are not part of a larger group of matching digits.
             if (digits[i] == digits[i - 1]) {
-                if (digits[i] != lastDigit) {
-                    lastDigit = digits[i]
-                    sameDigitCount = 0
-                }
                 sameDigitCount += 1
+            }
+            else {
+                if (sameDigitCount == 1) {
+                    rule1 = true
+                }
+                sameDigitCount = 0
             }
             // Rule-2: Going from left to right, the digits never decrease; they only ever increase or stay the same (like 111123 or 135679).
             if (digits[i].toInt() < digits[i - 1].toInt()) {
@@ -73,18 +75,18 @@ fun checkRules_Part2(value: Int) : Boolean {
             }
         }
     }
-    return sameDigitCount == 1
+    return rule1 || sameDigitCount == 1
 }
 
 fun main (args: Array<String>) {
     val min = 197487
     val max = 673251
-    var count = 0
+    var part1Count = 0
+    var part2Count = 0
     for (i in min..max) {
-        if (checkRules_Part2(i)) {
-            println(i)
-            count += 1
-        }
+        part1Count += if (checkRules_Part1(i)) 1 else 0
+        part2Count += if (checkRules_Part2(i)) 1 else 0
     }
-    println("Total values = $count")
+    println("Different passwords (Part1) = $part1Count")
+    println("Different passwords (Part2) = $part2Count")
 }
