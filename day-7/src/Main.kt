@@ -1,4 +1,5 @@
 import java.io.File
+import java.util.function.IntConsumer
 
 /**
  * --- Day 7: Amplification Circuit ---
@@ -59,7 +60,81 @@ import java.io.File
  *
  * Try every combination of phase settings on the amplifiers. What is the highest signal that can be sent to the
  * thrusters?
+ *      -> Your puzzle answer was 298586.
+ *
+ * --- Part Two ---
+ * It's no good - in this configuration, the amplifiers can't generate a large enough output signal to produce the
+ * thrust you'll need. The Elves quickly talk you through rewiring the amplifiers into a feedback loop:
+ *
+ *          O-------O  O-------O  O-------O  O-------O  O-------O
+ *     0-+->| Amp A |->| Amp B |->| Amp C |->| Amp D |->| Amp E |-.
+ *      |   O-------O  O-------O  O-------O  O-------O  O-------O |
+ *      |                                                         |
+ *      '---------------------------------------------------------+
+ *                                                                |
+ *                                                                v
+ *                                                         (to thrusters)
+ *
+ * Most of the amplifiers are connected as they were before; amplifier A's output is connected to amplifier B's input,
+ * nd so on. However, the output from amplifier E is now connected into amplifier A's input. This creates the feedback
+ * loop: the signal will be sent through the amplifiers many times.
+ *
+ * In feedback loop mode, the amplifiers need totally different phase settings: integers from 5 to 9, again each used
+ * exactly once. These settings will cause the Amplifier Controller Software to repeatedly take input and produce output
+ * many times before halting. Provide each amplifier its phase setting at its first input instruction; all further
+ * input/output instructions are for signals.
+ *
+ * Don't restart the Amplifier Controller Software on any amplifier during this process. Each one should continue
+ * receiving and sending signals until it halts.
+ *
+ * All signals sent or received in this process will be between pairs of amplifiers except the very first signal and
+ * the very last signal. To start the process, a 0 signal is sent to amplifier A's input exactly once.
+ *
+ * Eventually, the software on the amplifiers will halt after they have processed the final loop. When this happens,
+ * the last output signal from amplifier E is sent to the thrusters. Your job is to find the largest output signal that
+ * can be sent to the thrusters using the new phase settings and feedback loop arrangement.
+ *
+ * Here are some example programs:
+ *      - Max thruster signal 139629729 (from phase setting sequence 9,8,7,6,5):
+ *          3,26,1001,26,-4,26,3,27,1002,27,2,27,1,27,26,27,4,27,1001,28,-1,28,1005,28,6,99,0,0,5
+ *      - Max thruster signal 18216 (from phase setting sequence 9,7,8,5,6):
+ *          3,52,1001,52,-5,52,3,53,1,52,56,54,1007,54,5,55,1005,55,26,1001,54,-5,54,1105,1,12,1,53,54,53,1008,54,0,55,
+ *          1001,55,1,55,2,53,55,53,4,53,1001,56,-1,56,1005,56,6,99,0,0,0,0,10
+ *
+ * Try every combination of the new phase settings on the amplifier feedback loop. What is the highest signal that can
+ * be sent to the thrusters?
+ *      --> Your puzzle answer was 9246095.
  */
+
+fun findLargestAmplifier(intcodeArgs: Array<String>, phaseSettings: Array<Int>) {
+    val phasePermutations = Permuter(phaseSettings).permutations
+    var winnerPermutation = phasePermutations.first()
+    var largestOutput = 0
+
+    phasePermutations.forEach { phasePerm ->
+        val amps = mutableListOf<Intcode>()
+        phasePerm.forEach { phase -> amps.add(Intcode(intcodeArgs.copyOf(), phase))}
+
+        var output = 0
+        var run = true
+        while (run) {
+            amps.forEach { amplifier ->
+                output = amplifier.run(output)
+                if (amplifier.isFinished()) run = false
+            }
+        }
+        if (output > largestOutput) {
+            largestOutput = output
+            winnerPermutation = phasePerm
+        }
+    }
+
+    // Print results
+    var winnerPerm = ""
+    winnerPermutation.forEach { winnerPerm += "$it," }
+    println("Largest output = $largestOutput; Phase permutation ={${winnerPerm.substring(0, winnerPerm.length-1)}}")
+}
+
 fun main(args: Array<String>) {
     if (args.count() != 1) {
         println("*** Missing input file ***")
@@ -71,28 +146,6 @@ fun main(args: Array<String>) {
         params.forEach { intcodeArgs.add(it) }
     }
 
-    // Find every possible permutation
-    val permutations = Permuter(arrayOf(0,1,2,3,4)).permutations
-
-    // Test the intcode using every permutation
-    var winnerPermutation = permutations.first()
-    var highestSignal = 0
-
-    permutations.forEach { permutation ->
-        var output = 0
-        permutation.forEach { n ->
-            val thruster = Intcode(intcodeArgs.toTypedArray())
-            output = thruster.run(arrayOf(n, output))
-        }
-
-        if (output >= highestSignal) {
-            winnerPermutation = permutation
-            highestSignal = output
-        }
-    }
-
-    winnerPermutation.forEach {
-        print("$it,")
-    }
-    println("result=$highestSignal")
+    findLargestAmplifier(intcodeArgs.toTypedArray(), arrayOf(0,1,2,3,4))     // Part-1
+    findLargestAmplifier(intcodeArgs.toTypedArray(), arrayOf(5,6,7,8,9))     // Part-2
 }
