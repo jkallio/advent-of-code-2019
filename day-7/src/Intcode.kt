@@ -10,8 +10,9 @@ class Intcode(private val intcode: Array<String>) {
         intcode[finalAddr] = value.toString()
     }
 
-    fun run(): Int {
+    fun run(inputs: Array<Int>): Int {
         var i = 0
+        var inputIndex = 0
         var lastOutput = 0
         loop@ while (i < intcode.count()) {
             val opcode = intcode[i]
@@ -30,21 +31,23 @@ class Intcode(private val intcode: Array<String>) {
                 }
 
                 3 -> { // op = 'input'
-                    assert(mode1 == 0 && mode2 == 0 && mode3 == 0)
-                    print("Your input > ")
-                    val strInput = readLine()!!
-                    val input = strInput.toIntOrNull()
-                    if (input == null) {
-                        println ("*** Invalid user input ***")
-                        return -1
+                    var finalInput: Int? = null
+                    if (inputIndex < inputs.count()) {
+                        finalInput = inputs.elementAt(inputIndex)
+                        inputIndex += 1
                     }
-                    writeValue(i+1, input)
-                    i += 2
+                    if (finalInput == null) {
+                        print("Your input > ")
+                        finalInput = readLine()!!.toIntOrNull()
+                    }
+                    finalInput?.let {
+                        writeValue(i+1, it)
+                        i += 2
+                    }
                 }
 
                 4 -> { // op = 'output'
                     lastOutput = if (mode1 == 1) intcode[i+1].toInt() else intcode[intcode[i+1].toInt()].toInt()
-                    println("Output: $lastOutput")
                     i += 2
                 }
 

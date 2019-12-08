@@ -1,3 +1,5 @@
+import java.io.File
+
 /**
  * --- Day 7: Amplification Circuit ---
  * Based on the navigational maps, you're going to need to send more power to your ship's thrusters to reach Santa in
@@ -37,7 +39,8 @@
  *          produced from amplifier A. It will then produce a new output signal destined for amplifier C.
  *      - Start the software for amplifier C, provide the phase setting (2) and the value from amplifier B, then collect
  *          its output signal.
- *      - Run amplifier D's software, provide the phase setting (4) and input value, and collect its output signal.
+ *      - Run amplifier D's software, provide the phase setting (4) and input value, and collect
+ *      its output signal.
  *      - Run amplifier E's software, provide the phase setting (0) and input value, and collect its output signal.
  *
  * The final output signal from amplifier E would be sent to the thrusters. However, this phase setting sequence may not
@@ -57,7 +60,39 @@
  * Try every combination of phase settings on the amplifiers. What is the highest signal that can be sent to the
  * thrusters?
  */
-
 fun main(args: Array<String>) {
+    if (args.count() != 1) {
+        println("*** Missing input file ***")
+        return
+    }
+    val intcodeArgs = mutableListOf<String>()
+    File(args[0]).forEachLine { line ->
+        val params = line.split(',')
+        params.forEach { intcodeArgs.add(it) }
+    }
 
+    // Find every possible permutation
+    val permutations = Permuter(arrayOf(0,1,2,3,4)).permutations
+
+    // Test the intcode using every permutation
+    var winnerPermutation = permutations.first()
+    var highestSignal = 0
+
+    permutations.forEach { permutation ->
+        var output = 0
+        permutation.forEach { n ->
+            val thruster = Intcode(intcodeArgs.toTypedArray())
+            output = thruster.run(arrayOf(n, output))
+        }
+
+        if (output >= highestSignal) {
+            winnerPermutation = permutation
+            highestSignal = output
+        }
+    }
+
+    winnerPermutation.forEach {
+        print("$it,")
+    }
+    println("result=$highestSignal")
 }
