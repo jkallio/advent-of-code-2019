@@ -1,8 +1,11 @@
 import kotlin.math.abs
 
 class Node (val x : Int, val y : Int) {
-    val manhattanDistance: Int = abs(x) + abs(y)
-    var stepCount: Int = 0
+    var next: Node? = null
+    var isVisited = false
+    var isJunction = false
+    var stepsToHere = 0
+    val manhattanDistance: Long = abs(x).toLong() + abs(y).toLong()
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -19,6 +22,6 @@ class Node (val x : Int, val y : Int) {
     }
 
     override fun toString(): String {
-        return "${super.toString()}: ($x, $y) -> $manhattanDistance"
+        return "($x, $y); -> $manhattanDistance"
     }
 }

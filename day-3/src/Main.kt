@@ -50,7 +50,7 @@ import java.io.File
  *      U98,R91,D20,R16,D67,R40,U7,R15,U6,R7 = distance 135
  *
  * What is the Manhattan distance from the central port to the closest intersection?
- *
+ *      -> Your puzzle answer was 280.
  *
  * --- Part Two ---
  * It turns out that this circuit is very timing-sensitive; you actually need to minimize the signal delay.
@@ -88,36 +88,29 @@ import java.io.File
  *      U98,R91,D20,R16,D67,R40,U7,R15,U6,R7 = 410 steps
  *
  * What is the fewest combined steps the wires must take to reach an intersection?
+ *      -> Your puzzle answer was 10554.
  */
 
-fun findClosestCrossSection(wire1: Wire, wire2: Wire): Node? {
-    var closestNode: Node? = null
-    for (node in wire1.nodes) {
-        if (wire2.nodes.containsKey(node.value.hashCode())) {
-            println("Cross section found => $node")
-            if (closestNode == null || node.value.manhattanDistance < closestNode.manhattanDistance) {
-                closestNode = node.value
-            }
-        }
-    }
-    return closestNode
-}
-
 fun main (args: Array<String>) {
-    if (args.count() == 1) {
-        val wires = mutableListOf<Wire>()
-        File(args[0]).forEachLine {
-            wires.add(Wire(it))
-        }
-        if (wires.count() == 2) {
-            val node = findClosestCrossSection(wires[0], wires[1])
-            println("Closest cross section = $node")
-        }
-        else {
-            println("*** Invalid input (Expected 2 wire input strings)")
+    val wires = mutableListOf<Wire>()
+    File(args[0]).forEachLine {line ->
+        wires.add(Wire(line))
+    }
+
+    // Part-1
+    val closest = wires[0].findClosestJunction(wires[1])
+    println("Closest junction is $closest")
+
+    // Part-2
+    val junctions1 = wires[0].countStepsToJunctions()
+    val junctions2 = wires[1].countStepsToJunctions()
+
+    var closest2 = Long.MAX_VALUE
+    junctions1.forEach {it1 ->
+        junctions2[it1.key]?.let { it2 ->
+            val tot:Long = it1.value.stepsToHere.toLong() + it2.stepsToHere.toLong()
+            closest2 = if (tot < closest2) tot else closest2
         }
     }
-    else {
-        print("*** Missing argument: <filename>")
-    }
+    print ("Closest sum of steps is $closest2")
 }
