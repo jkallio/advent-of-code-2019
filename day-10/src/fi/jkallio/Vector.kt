@@ -1,23 +1,21 @@
 package fi.jkallio
 
-import java.lang.Math.*
+import kotlin.math.pow
 import kotlin.math.sqrt
 
 class Vector (val p: Point, val q: Point) {
-    val x: Int
-    val y: Int
-    val length: Double
+    private val direction = Pair(
+        q.x.toDouble() - p.x.toDouble(),
+        q.y.toDouble() - p.y.toDouble())
+    val magnitude: Double
     val angle: Double
 
     init {
-        // Find the vector and angle
-        x = q.x - p.x
-        y = q.y - p.y
-        length = sqrt(pow(x.toDouble(), 2.0) + pow(y.toDouble(), 2.0))
-        angle = Math.toDegrees(kotlin.math.atan2(x.toDouble(), y.toDouble()))
+        magnitude = sqrt(direction.first.pow(2.0) + direction.second.pow(2.0))
+        angle = Math.toDegrees(kotlin.math.atan2(direction.first, direction.second))
     }
 
     override fun toString(): String {
-        return ("$q; L=${"%.1f".format(length)}; A=${"%.1f".format(angle)}")
+        return ("$q; L=${"%.1f".format(magnitude)}; A=${"%.1f".format(angle)}")
     }
 }

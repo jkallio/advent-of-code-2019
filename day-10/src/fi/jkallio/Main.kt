@@ -133,17 +133,36 @@ import java.io.File
  * (For example, (8,2) becomes 802.)
  */
 
-fun main(args: Array<String>) {
-    val inputFile = args[0]
-    println("Input file: $inputFile")
-    val map = SpaceMap(File(inputFile).readLines())
-
-    var bestPoint: Pair<Point?, Int> = Pair(null, 0)
-    map.asteroids.values.forEach { p ->
-        val count = map.calculateDetectedAsteroids(p)
-        if (count > bestPoint.second) {
-            println("Asteroids detected = $count from $p")
-            bestPoint = Pair(p, count)
+fun findBestLocationForBase(asteroids: List<Point>): Pair<Base?, Int> {
+    var bestBase: Base? = null
+    var highestAsteroidCount = -1
+    asteroids.forEach { p ->
+        val base = Base(p)
+        val count = base.calculateDetectedAsteroids(asteroids)
+        if (count > highestAsteroidCount) {
+            bestBase = base
+            highestAsteroidCount = count
         }
+    }
+    return Pair(bestBase, highestAsteroidCount)
+}
+
+fun main(args: Array<String>) {
+    val inputFile = args[4]
+    println("Input file: $inputFile")
+    val input = File(inputFile).readLines()
+    val asteroids = mutableListOf<Point>()
+    for (y in input.indices) {
+        for (x in input[y].indices) {
+            if (input[y][x] == '#') {
+                asteroids.add(Point(x, y))
+            }
+        }
+    }
+
+    // Part-1
+    val result = findBestLocationForBase(asteroids)
+    result.first?.let { base ->
+        println("Base location ${base.location}; Asteroids detected = ${result.second}")
     }
 }
