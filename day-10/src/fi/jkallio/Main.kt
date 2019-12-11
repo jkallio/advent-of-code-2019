@@ -138,31 +138,46 @@ fun findBestLocationForBase(asteroids: List<Point>): Pair<Base?, Int> {
     var highestAsteroidCount = -1
     asteroids.forEach { p ->
         val base = Base(p)
-        val count = base.calculateDetectedAsteroids(asteroids)
-        if (count > highestAsteroidCount) {
+        val detected = base.scanAsteroids(asteroids).count()
+        if (detected > highestAsteroidCount) {
             bestBase = base
-            highestAsteroidCount = count
+            highestAsteroidCount = detected
         }
     }
     return Pair(bestBase, highestAsteroidCount)
 }
 
 fun main(args: Array<String>) {
-    val inputFile = args[4]
+    val inputFile = args[0]
     println("Input file: $inputFile")
     val input = File(inputFile).readLines()
-    val asteroids = mutableListOf<Point>()
+    val asteroids = mutableMapOf<Int,Point>()
     for (y in input.indices) {
         for (x in input[y].indices) {
             if (input[y][x] == '#') {
-                asteroids.add(Point(x, y))
+                val point = Point(x, y)
+                asteroids[point.hashCode()] = point
             }
         }
     }
 
     // Part-1
-    val result = findBestLocationForBase(asteroids)
+    val result = findBestLocationForBase(asteroids.values.toList())
     result.first?.let { base ->
         println("Base location ${base.location}; Asteroids detected = ${result.second}")
+
+        // Part-2
+        var shotCount = 0
+        while (asteroids.count() > 1) {
+            val rayVector = base.scanAsteroids(asteroids.values.toList()).toSortedMap(compareByDescending { it })
+            rayVector.forEach {
+                shotCount += 1
+                if (shotCount == 200) {
+                    println("Shot #$shotCount ${it.value}")
+                    print ("Result = ${it.value.q.x * 100 + it.value.q.y}")
+                }
+                asteroids.remove(it.value.q.hashCode())
+            }
+        }
     }
 }

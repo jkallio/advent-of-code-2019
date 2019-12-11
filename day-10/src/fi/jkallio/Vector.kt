@@ -12,7 +12,7 @@ class Vector (val p: Point, val q: Point) {
 
     init {
         magnitude = sqrt(direction.first.pow(2.0) + direction.second.pow(2.0))
-        angle = Math.toDegrees(kotlin.math.atan2(direction.first, direction.second))
+        angle = Math.toDegrees(kotlin.math.atan2(direction.first, direction.second)) - 180
     }
 
     override fun toString(): String {
