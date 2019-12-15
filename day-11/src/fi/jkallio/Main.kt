@@ -79,6 +79,21 @@ import java.io.File
  * Build a new emergency hull painting robot and run the Intcode program on it. How many panels does it paint at least
  * once?
  *      --> Your puzzle answer was 1934.
+ *
+ *
+ * --- Part Two ---
+ * You're not sure what it's trying to paint, but it's definitely not a registration identifier. The Space Police are
+ * getting impatient.
+ *
+ * Checking your external ship cameras again, you notice a white panel marked "emergency hull painting robot starting
+ * panel". The rest of the panels are still black, but it looks like the robot was expecting to start on a white panel,
+ * not a black one.
+ *
+ * Based on the Space Law Space Brochure that the Space Police attached to one of your windows, a valid registration
+ * identifier is always eight capital letters. After starting the robot on a single white panel instead, what
+ * registration identifier does it paint on your hull?
+ *      --> Your puzzle answer was RKURGKGK.
+ *
  */
 
 fun main(args: Array<String>) {
@@ -86,6 +101,18 @@ fun main(args: Array<String>) {
     File(args[0]).readLines().forEach {
         input.addAll(it.split(','))
     }
-    val robot = Robot(Intcode(input.toTypedArray()))
-    robot.startPainting()
+
+    // Part-1: Count painted panels
+    val robot1 = Robot(Intcode(input.toTypedArray()), mutableMapOf<Int, Point>(), false)
+    val panelCount1 = robot1.startPainting()
+    println("Part-1: Painted panels = $panelCount1")
+
+    // Part-2: Print painted registration
+    val hullMap = mutableMapOf<Int, Point>()
+    val robot2 = Robot(Intcode(input.toTypedArray()), hullMap, true)
+    val panelCount2 = robot2.startPainting()
+    println("Part-2: Painted panels = $panelCount2")
+    hullMap.fillEmptyPanels()
+    hullMap.saveAsTxt("output.txt")
+    hullMap.saveAsJpg("output.jpg")
 }

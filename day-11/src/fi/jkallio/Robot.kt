@@ -1,20 +1,17 @@
 package fi.jkallio
 
-class Robot(val intcode: Intcode) {
+class Robot(val intcode: Intcode, private val hullMap: MutableMap<Int, Point>, firstPanelWhite: Boolean) {
     enum class EDirection { UP, DOWN, LEFT, RIGHT }
     private var facing = EDirection.UP
     private var position = Point(0,0)
-    private val hullMap = mutableMapOf<Int, Point>()
-    private var topLeft = Point(0,0)
-    private var botRight = Point(0,0)
 
     init {
         hullMap[position.hashCode()] = position
+        position.paintedWhite = firstPanelWhite
     }
 
-    fun startPainting() {
+    fun startPainting(): Int{
         while (!intcode.isFinished()) {
-
             // Check current panel color and paint
             val currentPanelColor = if (hullMap[position.hashCode()]!!.paintedWhite) 1 else 0
             val paintColor = intcode.run(currentPanelColor.toLong()).toInt()
@@ -24,8 +21,7 @@ class Robot(val intcode: Intcode) {
             val outDir = intcode.run().toInt()
             move(outDir != 0)
         }
-        println("Boundaries = $topLeft; $botRight")
-        println("Painted panels = ${ hullMap.count() }")
+        return hullMap.count()
     }
 
     private fun move(turnRight: Boolean) {
@@ -43,11 +39,5 @@ class Robot(val intcode: Intcode) {
             EDirection.LEFT     -> Point(position.x-1, position.y)
         }
         position = hullMap.getOrPut(newPos.hashCode(), { newPos })
-
-        // Update boundaries
-        if (position.x < topLeft.x) topLeft.x = position.x
-        if (position.y > topLeft.y) topLeft.y = position.y
-        if (position.x > botRight.x) botRight.x = position.x
-        if (position.y < botRight.y) botRight.y = position.y
     }
 }
