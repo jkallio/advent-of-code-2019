@@ -1,4 +1,7 @@
 package fi.jkallio
+
+import java.io.File
+
 /**
  * --- Day 11: Space Police ---
  * On the way to Jupiter, you're pulled over by the Space Police.
@@ -75,8 +78,14 @@ package fi.jkallio
  *
  * Build a new emergency hull painting robot and run the Intcode program on it. How many panels does it paint at least
  * once?
+ *      --> Your puzzle answer was 1934.
  */
 
 fun main(args: Array<String>) {
-
+    val input = mutableListOf<String>()
+    File(args[0]).readLines().forEach {
+        input.addAll(it.split(','))
+    }
+    val robot = Robot(Intcode(input.toTypedArray()))
+    robot.startPainting()
 }

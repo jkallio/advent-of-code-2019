@@ -1,3 +1,5 @@
+package fi.jkallio
+
 class Intcode(source: Array<String>) {
     private var pos: Int = 0
     private var base = 0
@@ -66,8 +68,8 @@ class Intcode(source: Array<String>) {
 
                 4 -> { // op = 'output'
                     output = getLongValue(pos + 1, mode1)
-                    println("Output = $output")
                     pos += 2
+                    break@loop
                 }
 
                 5 -> { // op = 'jump-if-true'
@@ -114,5 +116,9 @@ class Intcode(source: Array<String>) {
             }
         }
         return output
+    }
+
+    fun isFinished(): Boolean {
+        return pos == -1
     }
 }
