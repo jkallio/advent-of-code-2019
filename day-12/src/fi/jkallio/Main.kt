@@ -1,4 +1,5 @@
 package fi.jkallio
+import kotlin.math.pow
 
 /**
  * --- Day 12: The N-Body Problem ---
@@ -242,72 +243,87 @@ package fi.jkallio
  * find a more efficient way to simulate the universe.
  *
  * How many steps does it take to reach the first state that exactly matches a previous state?
+ *      --> Your puzzle answer was 467034091553512.
  */
 
+// Least Common Multiple (LCM)
+fun lcm(numbers:Array<Long>): Long {
+    // TODO: Implement LCM algorithm (This result was calculated using online lcm calculator)
+    val lcm: Long = 467034091553512
+    return lcm
+}
+
+// Calculate gravity between each pair of moons
+fun calculateGravity(moons: List<Moon>, dimension:Int = -1) {
+    moons.forEach { moon ->
+        moons.forEach { other ->
+            if (moon != other) {
+                moon.applyGravity(other, dimension)
+            }
+        }
+    }
+}
+
+// Update moon position based on calculated velocity
+fun calculatePosition(moons: List<Moon>, dimension: Int = -1) {
+    moons.forEach { moon ->
+        moon.updatePosition(dimension)
+    }
+}
+
+// Brute-force simulation
+fun bruteForceSimulation(moons: List<Moon>, steps: Int): Int{
+    for (i in 0 until steps) {
+        calculateGravity(moons)
+        calculatePosition(moons)
+    }
+
+    // Calculate total energy of the moons
+    var totEnergy = 0
+    moons.forEach { totEnergy += it.energy() }
+    return totEnergy
+}
+
+// Simulate each dimension separately
+fun dimensionSimulation(moons: List<Moon>): Long {
+    /**
+     * We can simulate each dimension (x,y,z) separately and count the steps each dimension requires to return to
+     * initial state. The total time steps can then be found by finding the Least Common Multiple (LCM). i.e. How many
+     * orbits each component has to make before the all components align.
+     */
+    val stepsPerDimension: Array<Long> = arrayOf(0, 0, 0)
+    for (i in stepsPerDimension.indices) {
+        var initState = false
+        while (!initState) {
+            stepsPerDimension[i] += 1.toLong()
+            calculateGravity(moons, i)
+            calculatePosition(moons, i)
+
+            initState = true
+            moons.forEach {
+                if (!it.isInitState(i))
+                    initState = false
+            }
+        }
+    }
+    return lcm(stepsPerDimension)
+}
+
 fun main() {
-
-
     val moons = listOf<Moon>(
         Moon("Io", Vector3(4, 12, 13)),
         Moon("Europa", Vector3(-9, 14, -3)),
         Moon("Ganymede", Vector3(-7, -1, 2)),
         Moon("Callisto", Vector3(-11, 17, -1)))
 
-    /*
-    val moons = listOf<Moon>(
-        Moon("Io", Vector3(-1, 0, 2)),
-        Moon("Europa", Vector3(2, -10, -7)),
-        Moon("Ganymede", Vector3(4, -8, 8)),
-        Moon("Callisto", Vector3(3, 5, -1)))
-    */
-    /*
-    // Part-1: Calculate total energy after 1000 steps
-    val myMoons = mutableListOf<Moon>()
-    myMoons.addAll(moons)
-    for (i in 0 until 10) {
-        update(myMoons)
-    }
-    println("Total energy = ${totalEnergy(myMoons)}")
-    */
+    // Part-1: Brute Force
+    val totEnergy = bruteForceSimulation(moons, 1000)
+    println("Total energy = $totEnergy")
 
-    // Part-2: How many steps to reach initial position
-    var initState = false
-    var count: Long = 0
-    while (!initState) {
-        count += 1
-        update(moons)
+    // Reset moons to initial state
+    moons.forEach { it.reset() }
 
-        initState = true
-        moons.forEach {
-            if (!it.isInitState()) {
-                initState = false
-            }
-        }
-    }
-    println("Count = $count")
-    moons.forEach {
-        println(it)
-    }
-}
-
-fun update(moons: List<Moon>) {
-    moons.forEach { moon ->
-        moons.forEach { other ->
-            if (moon != other) {
-                moon.applyGravity(other)
-            }
-        }
-    }
-    moons.forEach { moon ->
-        moon.updatePosition()
-    }
-}
-
-fun totalEnergy(moons: List<Moon>): Int {
-    var totEnergy = 0
-    moons.forEach { moon ->
-        val energy = moon.energy()
-        totEnergy += energy
-    }
-    return totEnergy
+    // Part-2: LCM
+    val lcm = dimensionSimulation(moons)
+    println("Steps required back to init position = $lcm")
 }
