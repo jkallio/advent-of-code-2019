@@ -1,5 +1,9 @@
 package fi.jkallio
 
+import java.io.File
+import kotlin.math.ceil
+import kotlin.math.max
+
 /**
  * --- Day 14: Space Stoichiometry ---
  * As you approach the rings of Saturn, your ship's low fuel indicator turns on. There isn't any fuel here, but the
@@ -99,6 +103,86 @@ package fi.jkallio
  * Given the list of reactions in your puzzle input, what is the minimum amount of ORE required to produce exactly 1 FUEL?
  */
 
-fun main(args: Array<String>) {
 
+// Tab (\t) coubter for debug print formatting
+var tabCount = 0
+fun tabs(): String {
+    var tabs = ""
+    for (i in 0 until tabCount) {
+        tabs += "\t"
+    }
+    return tabs
+}
+
+fun parseElement(component: String): Element {
+    val parts = component.trim().split(" ")
+    return Element(parts[1], parts[0].toLong())
+}
+
+fun parseReactions(input: List<String>): List<Reaction> {
+    val reactions = mutableListOf<Reaction>()
+    input.forEach { line ->
+        val equationParts = line.split("=>")
+        val inputs = mutableListOf<Element>()
+        equationParts[0].split(",").forEach {
+            inputs.add(parseElement(it))
+        }
+        reactions.add(Reaction(parseElement(equationParts[1]), inputs))
+    }
+    return reactions
+}
+
+// Prime element found (prime = element that can be produces only by consuming ORE)
+fun findPrimeElements(element: Element, outPrimeCounts:MutableMap<String, Long>) {
+
+    // Find the reaction formula for the element
+    reactions.find { reaction -> reaction.result.name == element.name }?.let { reaction ->
+        if (reaction.inputs.count() == 1 && reaction.inputs.first().name == "ORE") {
+            outPrimeCounts[element.name] = outPrimeCounts.getOrDefault(element.name, 0.toLong()) + element.amount
+            println("${tabs()}++${element.amount}${element.name} = ${outPrimeCounts[element.name]}${element.name}")
+        }
+        else {
+            println("${tabs()}${element.amount}x${element.name} => {$reaction}")
+            tabCount += 1
+
+            // Call recursively for each input
+            reaction.inputs.forEach {
+                val multiplier = max(element.amount, reaction.result.amount)
+                val amount = ceil((it.amount / reaction.result.amount.toDouble()) * multiplier).toLong()
+                findPrimeElements(Element(it.name, amount), outPrimeCounts)
+            }
+            tabCount -=1
+        }
+    }
+}
+
+fun countRequiredOres(outPrimeCounts: Map<String, Long>): Long {
+    var oreCount: Long = 0
+    outPrimeCounts.forEach { primeCount ->
+        reactions.find { it.result.name == primeCount.key }?.let {
+            val ores = ceil(primeCount.value / it.result.amount.toDouble()).toInt() * it.inputs.first().amount
+            println("${primeCount.value}${primeCount.key} = $ores ores required")
+            oreCount += ores
+        }
+    }
+    return oreCount
+}
+
+var reactions = listOf<Reaction>()
+fun main(args: Array<String>) {
+    args.getOrNull(0)?.let { inputFile ->
+        reactions = parseReactions(File(inputFile).readLines())
+
+        val outPrimeCounts = mutableMapOf<String, Long>()
+        findPrimeElements(Element("FUEL", 1), outPrimeCounts)
+        println("---------------------------")
+        val oreCount = countRequiredOres(outPrimeCounts)
+        println("---------------------------")
+        println("Total Ore count = $oreCount")
+
+        // NOTE:
+        // 7868183 was not the right answer (too high)
+        // 1226495 was not the right answer (too high)
+
+    }
 }
