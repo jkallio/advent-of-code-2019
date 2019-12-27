@@ -2,7 +2,7 @@ package fi.jkallio
 
 class Droid (private val id: Int,
              private val intcode: Intcode,
-             private val shipMap: MutableMap<Int, Point>,
+             val shipMap: MutableMap<Int, Point>,
              var direction: Direction,
              var position: Point = Point(0,0),
              val route: MutableList<Point> = mutableListOf()) {
@@ -72,5 +72,9 @@ class Droid (private val id: Int,
             r.add(Point(it.x, it.y, it.tile))
         }
         return Droid(id, intcode.clone(), shipMap, dir, position, r)
+    }
+
+    override fun toString(): String {
+        return "#$id: $position (${route.count()-1})"
     }
 }

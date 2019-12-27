@@ -10,6 +10,7 @@ enum class Tile {
     UNKNOWN,
     START,
     EMPTY,
+    WINNING_ROUTE,
     WALL,
     OXYGEN_SYSTEM
 }
@@ -41,7 +42,8 @@ fun MutableMap<Int, Point>.saveAsTxt(filename: String) {
             val point = getOrDefault(Point.szudzikPairingFunction(x,y), Point(x, y, Tile.UNKNOWN))
             str += when(point.tile) {
                 Tile.START -> "S"
-                Tile.EMPTY -> "."
+                Tile.EMPTY -> " "
+                Tile.WINNING_ROUTE -> "."
                 Tile.WALL -> "#"
                 Tile.OXYGEN_SYSTEM -> "O"
                 Tile.UNKNOWN -> "\\"
@@ -68,9 +70,10 @@ fun MutableMap<Int, Point>.saveAsJpg(filename: String): Boolean {
             val rgb: Int = when(point.tile) {
                 Tile.START -> Color.BLUE.rgb
                 Tile.EMPTY -> Color.WHITE.rgb
+                Tile.WINNING_ROUTE -> Color.BLUE.rgb
                 Tile.WALL -> Color.BLACK.rgb
                 Tile.OXYGEN_SYSTEM -> Color.RED.rgb
-                Tile.UNKNOWN -> Color.GRAY.rgb
+                Tile.UNKNOWN -> Color.BLACK.rgb
             }
             img.setRGB(imgX, imgY, rgb)
             imgX += 1
@@ -78,5 +81,5 @@ fun MutableMap<Int, Point>.saveAsJpg(filename: String): Boolean {
         imgX = 0
         imgY+= 1
     }
-    return ImageIO.write(img, "jpg", File(filename))
+    return ImageIO.write(img, "png", File(filename))
 }

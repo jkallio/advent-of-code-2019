@@ -42,63 +42,62 @@ package fi.jkallio
  *
  * In the example above, suppose you've used the droid to explore the area fully and have the following map (where
  * locations that currently contain oxygen are marked O):
- *      ##
+ *       ##
  *      #..##
  *      #.#..#
  *      #.O.#
- *      ###
+ *       ###
  *
  * Initially, the only location which contains oxygen is the location of the repaired oxygen system. However, after one
  * minute, the oxygen spreads to all open (.) locations that are adjacent to a location containing oxygen:
- *      ##
+ *       ##
  *      #..##
  *      #.#..#
  *      #OOO#
- *      ###
+ *       ###
  *
  * After a total of two minutes, the map looks like this:
- *      ##
+ *       ##
  *      #..##
  *      #O#O.#
  *      #OOO#
- *      ###
+ *       ###
  *
  * After a total of three minutes:
- *      ##
+ *       ##
  *      #O.##
  *      #O#OO#
  *      #OOO#
- *      ###
+ *       ###
  *
  * And finally, the whole region is full of oxygen after a total of four minutes:
- *      ##
+ *       ##
  *      #OO##
  *      #O#OO#
  *      #OOO#
- *      ###
+ *       ###
  *
  * So, in this example, all locations contain oxygen after 4 minutes.
  * Use the repair droid to get a complete map of the area. How many minutes will it take to fill with oxygen?
+ *      --> Your puzzle answer was 344
  */
 
 import java.io.File
+import javax.swing.Box
 
-fun main(args: Array<String>) {
-    val intcodeInput = File(args[0]).readLines()[0].split(",")
-    val droidList = mutableListOf<Droid>()
-    val shipMap = mutableMapOf<Int, Point>()
+fun mapShip(initDroid: Droid, reverseMode: Boolean = false): Droid? {
+    var winningDroid: Droid? = null
     var idPool = 1
+    val droidList = mutableListOf(
+        initDroid.cloneWithDirection(idPool++, Droid.Direction.NORTH),
+        initDroid.cloneWithDirection(idPool++, Droid.Direction.SOUTH),
+        initDroid.cloneWithDirection(idPool++, Droid.Direction.EAST),
+        initDroid.cloneWithDirection(idPool++, Droid.Direction.WEST))
 
-    droidList.add(Droid(idPool++, Intcode(intcodeInput), shipMap, Droid.Direction.NORTH))
-    droidList.add(Droid(idPool++, Intcode(intcodeInput), shipMap, Droid.Direction.SOUTH))
-    droidList.add(Droid(idPool++, Intcode(intcodeInput), shipMap, Droid.Direction.WEST))
-    droidList.add(Droid(idPool++, Intcode(intcodeInput), shipMap, Droid.Direction.EAST))
-
-    var oxygenSystemFound = false
-    while (!oxygenSystemFound) {
+    while (droidList.isNotEmpty()) {
         val deadList = mutableListOf<Droid>()
         val cloneList = mutableListOf<Droid>()
-        loop@for (i in droidList.indices) {
+        for (i in droidList.indices) {
             val droid = droidList[i]
             droid.move()
             when {
@@ -106,8 +105,9 @@ fun main(args: Array<String>) {
                     deadList.add(droid)
                 }
                 droid.foundOxygenSystem -> {
-                    oxygenSystemFound = true
-                    break@loop
+                    markRoute(droid)
+                    winningDroid = droid
+                    deadList.add(droid)
                 }
                 else -> {
                     when (droid.direction) {
@@ -122,10 +122,41 @@ fun main(args: Array<String>) {
                     }
                 }
             }
+            if (reverseMode) {
+                winningDroid = droid // In reverse mode last surviving droid will be returned
+            }
         }
         droidList.addAll(cloneList)
         droidList.removeAll(deadList)
     }
+    return winningDroid
+}
+
+fun markRoute(droid: Droid) {
+    droid.route.forEach {
+        droid.shipMap.get(it.hashCode())?.let { point ->
+            if (point.tile == Tile.EMPTY) {
+                point.tile = Tile.WINNING_ROUTE
+            }
+        }
+    }
+}
+
+fun main(args: Array<String>) {
+    val intcodeInput = File(args[0]).readLines()[0].split(",")
+    val shipMap = mutableMapOf<Int, Point>()
+    var winningDroid = mapShip(Droid(1, Intcode(intcodeInput), shipMap, Droid.Direction.NORTH))
+    println("----------------------------------")
+    println("Oxygen System found: $winningDroid")
+
     shipMap.saveAsTxt("output.txt")
-    shipMap.saveAsJpg("output.jpg")
+    shipMap.saveAsJpg("output.png")
+
+    winningDroid?.let { droid ->
+        shipMap.clear()
+        droid.route.clear()
+        winningDroid = mapShip(droid, true)
+        println("----------------------------------")
+        println("Steps to fill ship: ${winningDroid!!.route.count()-1}")
+    }
 }
